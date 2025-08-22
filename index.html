@@ -189,18 +189,16 @@
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
         }
 
-        .header h1 {
-            font-size: 4.5rem;
-            font-weight: 900;
+        .header .logo {
+            max-height: 200px;
+            width: auto;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 50%, var(--accent-tertiary) 100%);
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: gradientFlow 8s ease-in-out infinite;
-            letter-spacing: -0.05em;
-            text-shadow: 0 0 80px rgba(99, 102, 241, 0.5);
+            filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.3));
+            transition: transform 0.3s ease;
+        }
+
+        .header .logo:hover {
+            transform: scale(1.05);
         }
 
         @keyframes gradientFlow {
@@ -572,8 +570,8 @@
                 padding: 1rem;
             }
 
-            .header h1 {
-                font-size: 3rem;
+            .header .logo {
+                max-height: 120px;
             }
 
             .header {
@@ -629,7 +627,7 @@
             <div class="orb"></div>
         </div>
         <div class="header">
-            <h1>LexiMus USAL</h1>
+            <img src="LexiMus-Logo-Vertical.svg" alt="LexiMus USAL" class="logo">
             <div class="project-code">PID2022-139589NB-C33</div>
             <p class="subtitle">Léxico y Ontología de la Música en Español</p>
             
