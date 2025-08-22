@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introducción - LexiMus USAL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+
+        header h1 {
+            font-size: 7rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .intro-section {
+            margin-bottom: 50px;
+        }
+
+        .intro-section h2 {
+            color: #764ba2;
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .intro-section p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .section-divider {
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            margin: 40px 0;
+            border-radius: 2px;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px 15px 0 0;
+            margin: -40px -40px 30px -40px;
+        }
+
+        .section-header h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .section-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .methodology {
+            background: #f8f9ff;
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .methodology h4 {
+            color: #764ba2;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+
+        .corpus-list {
+            background: #fff8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .corpus-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 3px solid #764ba2;
+            background: white;
+        }
+
+        .corpus-item strong {
+            color: #667eea;
+        }
+
+        .process-steps {
+            counter-reset: step-counter;
+        }
+
+        .process-step {
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 25px;
+        }
+
+        .process-step::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .tool-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+        }
+
+        .tool-card h5 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+
+        .conclusion {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .conclusion h3 {
+            color: white;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 4rem;
+            }
+            
+            .content-card {
+                padding: 25px;
+                margin: 20px 10px;
+            }
+            
+            .section-header {
+                margin: -25px -25px 20px -25px;
+                padding: 20px;
+            }
+            
+            .process-step {
+                padding-left: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LexiMus USAL</h1>
+            <p>Análisis de Prensa Musical Histórica con Inteligencia Artificial</p>
+        </header>
+
+        <div class="content-card">
+            <div class="intro-section">
+                <h2>¿Qué es este proyecto y cómo funciona la IA en el análisis de textos históricos?</h2>
+                
+                <p>Imagina que tienes miles de periódicos históricos de los siglos XVIII, XIX y XX guardados en una biblioteca, y quieres encontrar toda la información sobre música que contienen. Hacerlo manualmente sería una tarea que tomaría décadas. Aquí es donde entra la <strong>Inteligencia Artificial</strong>: como un asistente incansable capaz de leer, analizar y extraer información de enormes cantidades de texto en cuestión de horas.</p>
+
+                <p>La IA no "piensa" como los humanos, pero sí puede reconocer patrones en el lenguaje. Cuando le damos instrucciones específicas (llamadas "prompts"), puede identificar qué textos hablan de música, extraer nombres de compositores, obras, instrumentos, géneros musicales, y mucho más. Es como tener un investigador especializado que nunca se cansa y puede procesar millones de palabras buscando exactamente lo que necesitamos.</p>
+
+                <div class="highlight">
+                    <p><strong>LexiMus USAL</strong> es un proyecto pionero que utiliza estas capacidades de la IA para recuperar y analizar el patrimonio musical español a través de la prensa histórica digitalizada. Forma parte del proyecto nacional "LexiMus: Léxico y ontología de la música en español", desarrollado por la Universidad de Salamanca en colaboración con el Instituto Complutense de Ciencias Musicales.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <h3>1. Buscador de Noticias Musicales</h3>
+                <p>Detección Automática de Contenido Musical</p>
+            </div>
+
+            <p><strong>¿Qué encontrarás aquí?</strong> Una base de datos en constante crecimiento de noticias, anuncios y artículos sobre música extraídos automáticamente de periódicos históricos españoles.</p>
+
+            <div class="methodology">
+                <h4>¿Cómo se han extraído estos datos?</h4>
+                <p>El proceso de extracción se realizó utilizando <strong>Claude Code</strong>, una herramienta de IA especializada en programación y análisis de documentos. El procedimiento fue el siguiente:</p>
+            </div>
+
+            <div class="process-steps">
+                <div class="process-step">
+                    <h4>Fuentes originales</h4>
+                    <p>Se trabajó con números digitalizados en formato PDF de periódicos históricos alojados en la Hemeroteca de la Biblioteca Nacional de España (BNE).</p>
+                </div>
+
+                <div class="process-step">
+                    <h4>Prompts especializados</h4>
+                    <p>Para cada fuente histórica (Diario de Madrid, El Debate, España, El Sol), se diseñaron instrucciones específicas adaptadas al estilo periodístico y características de cada publicación.</p>
+                </div>
+
+                <div class="process-step">
+                    <h4>Detección automática</h4>
+                    <p>Claude Code analizó cada PDF, identificando automáticamente secciones, párrafos y menciones relacionadas con música: conciertos, óperas, críticas musicales, anuncios de partituras, biografías de músicos, etc.</p>
+                </div>
+
+                <div class="process-step">
+                    <h4>Transcripción inteligente</h4>
+                    <p>La IA no solo detectó el contenido musical, sino que lo transcribió de forma estructurada, conservando información como fechas, nombres propios, lugares y contexto.</p>
+                </div>
+            </div>
+
+            <div class="corpus-list">
+                <h4>Corpus actuales disponibles:</h4>
+                <div class="corpus-item">
+                    <strong>Diario de Madrid</strong> (1788-1823): Noticias y anuncios de la vida musical madrileña
+                </div>
+                <div class="corpus-item">
+                    <strong>El Debate</strong> (1881-1883): Publicación liberal con contenido musical diverso
+                </div>
+                <div class="corpus-item">
+                    <strong>España</strong> (semanario): Revista de la "edad de plata" intelectual española
+                </div>
+                <div class="corpus-item">
+                    <strong>El Sol</strong> (1918-1932): Con críticas musicales de Adolfo Salazar
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="content-card">
+            <div class="section-header">
+                <h3>2. Análisis Principal</h3>
+                <p>Descubrimiento de Patrones en Textos No Estructurados</p>
+            </div>
+
+            <p><strong>¿Qué encontrarás aquí?</strong> Análisis computacionales que revelan tendencias, patrones y evolución del discurso musical español a través del tiempo.</p>
+
+            <div class="methodology">
+                <h4>¿Cómo se han extraído estos datos?</h4>
+                <p>Este análisis trabajó con <strong>textos no estructurados</strong> (es decir, texto corrido sin clasificar previamente) para que la IA descubriera patrones de forma autónoma:</p>
+            </div>
+
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <h5>1. Análisis inicial con Claude</h5>
+                    <p>Se utilizó Claude (IA conversacional) para procesar los corpus textuales completos. La IA identificó automáticamente:</p>
+                    <ul style="margin-top: 10px; padding-left: 20px;">
+                        <li>Temáticas principales (ópera, música religiosa, música popular, etc.)</li>
+                        <li>Compositores y obras más mencionados</li>
+                        <li>Tipos de música y géneros predominantes</li>
+                        <li>Evolución del vocabulario musical</li>
+                        <li>Tendencias temporales y geográficas</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <h5>2. Precisión estadística con Voyant Tools</h5>
+                    <p>Para complementar el análisis cualitativo de Claude, se utilizó esta plataforma especializada en análisis textual que ofrece:</p>
+                    <ul style="margin-top: 10px; padding-left: 20px;">
+                        <li>Frecuencia exacta de términos musicales</li>
+                        <li>Visualizaciones de datos (nubes de palabras, gráficos temporales)</li>
+                        <li>Análisis de coocurrencias (qué palabras aparecen juntas)</li>
+                        <li>Estadísticas de distribución textual</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <h5>3. Análisis avanzado con Sketch Engine</h5>
+                    <p>Esta herramienta profesional de corpus lingüísticos permitió:</p>
+                    <ul style="margin-top: 10px; padding-left: 20px;">
+                        <li>Análisis semántico profundo del vocabulario musical</li>
+                        <li>Identificación de colocaciones y expresiones típicas</li>
+                        <li>Comparaciones entre diferentes períodos históricos</li>
+                        <li>Extracción de terminología especializada</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="methodology">
+                <h4>Metodología del análisis:</h4>
+                <ul style="padding-left: 20px;">
+                    <li><strong>Enfoque no supervisado:</strong> La IA descubrió patrones sin categorías predefinidas</li>
+                    <li><strong>Validación cruzada:</strong> Los resultados de Claude se contrastaron con las herramientas estadísticas</li>
+                    <li><strong>Contextualización histórica:</strong> Cada hallazgo se situó en su contexto musicológico correspondiente</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="conclusion">
+            <h3>Resultado: Un Laboratorio Digital para la Historia Musical Española</h3>
+            <p>Este proyecto representa una nueva forma de hacer investigación musicológica, donde la IA actúa como una lupa digital que nos permite ver patrones y tendencias que serían imposibles de detectar manualmente. Los resultados no solo nos muestran <strong>qué</strong> se escribió sobre música en la prensa histórica, sino <strong>cómo</strong> evolucionó el discurso musical español, qué obras y compositores dominaron cada época, y cómo se transformó el vocabulario musical a lo largo del tiempo.</p>
+            <p>La web está en constante actualización, incorporando nuevos corpus y refinando los análisis para ofrecer una visión cada vez más completa del patrimonio musical español documentado en la prensa histórica.</p>
+        </div>
+    </div>
+</body>
+</html>
