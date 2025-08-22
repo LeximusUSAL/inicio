@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Introducción - LexiMus USAL</title>
     <style>
+        :root {
+            --accent-primary: #008a9b;
+            --accent-secondary: #00a0b4;
+            --text-secondary: #475569;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(148, 163, 184, 0.2);
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -37,6 +45,10 @@
             margin-bottom: 15px;
         }
 
+        header {
+            text-align: center;
+        }
+
         .logo {
             max-height: 180px;
             width: auto;
@@ -48,6 +60,49 @@
             text-align: center;
             max-width: 800px;
             margin: 0 auto;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 0.5rem 0 1.5rem 0;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            opacity: 0.8;
+            padding: 0.8rem 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            display: inline-block;
+            position: relative;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .subtitle:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 138, 155, 0.15);
+        }
+
+        .subtitle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+
+        .subtitle:hover::before {
+            opacity: 0.05;
         }
 
         .content-section {
