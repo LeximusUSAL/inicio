@@ -4,15 +4,14 @@ Colección de 23 scripts Python para el análisis computacional de corpus de pre
 
 ## 📋 Descripción del Proyecto
 
-Este repositorio contiene las herramientas de procesamiento de lenguaje natural y análisis estadístico desarrolladas para el proyecto **LexiMus** (Léxico y ontología de la música en español). Los scripts procesan 25.8 millones de palabras distribuidas en 3,238 archivos de texto digitalizados de 19 revistas musicales españolas, abarcando más de dos siglos de periodismo musical.
+Este repositorio contiene las principales herramientas de procesamiento de lenguaje natural y análisis estadístico desarrolladas para el proyecto **LexiMus** (Léxico y ontología de la música en español) desde la Universidad de Salamanca. Los scripts han procesado 25.8 millones de palabras distribuidas en 3,238 archivos de texto digitalizados de 19 revistas musicales españolas, abarcando más de dos siglos de periodismo musical. Los datos actualmente son provisionales porque las revistas tienen todavía bastante "ruido OCR". No obstante, se trata de una aproximación fundamental al análisis computacional de este tipo de fuentes, mostrando las posibilidades futuras una vez que las fuentes estén más limpias.
 
 ### Objetivos del Análisis
 
 - **Análisis léxico musical**: Identificación y categorización de 150+ términos musicales (géneros, instrumentos, términos técnicos)
 - **Estudio de sesgo de género**: Análisis sistemático de representación y tratamiento diferencial por género
-- **Diversidad cultural**: Rastreo de representación étnica/racial y diversidad en la prensa musical
-- **Periodización histórica**: Análisis de 6 épocas desde el periodo Romántico (1842-1900) hasta la era Democrática (1990-2024)
-- **Distribución geográfica**: Estudio de cobertura Madrid/Barcelona/Regional
+- **Periodización histórica**: Análisis de 6 épocas desde el siglo XVIII, pasando por el periodo Romántico (1842-1900) hasta la era Democrática (1990-2024)
+- **Distribución geográfica**: Estudio de cobertura Madrid/Barcelona/otras ciudades españolas
 
 ## 📂 Estructura del Repositorio
 
@@ -24,14 +23,12 @@ Scripts especializados para el procesamiento de revistas musicales especializada
 - **`spanish_magazines_analyzer.py`**: Procesador especializado para colecciones específicas de revistas
 - **`analizador_revistas_musicales.py`**: Analizador general de revistas musicales con extracción de entidades
 - **`boletin_musical_analysis.py`**: Análisis específico del Boletín Musical
-- **`analisis_revista_espana_completo.py`**: Análisis completo de la Revista España
-- **`analizador_revista_espana.py`**: Procesador de la Revista España
-
-**Revistas analizadas**: ONDAS (1925-1926), Revista Musical Hispanoamericana (1914-1917), Revista Musical de Bilbao (1909-1913), Revista Triunfo (1962-1982), MondoSonoro (2009-2024), entre otras.
+- **`analisis_revista_espana_completo.py`**: Ejemplo de Análisis completo para una sola pulicación, la Revista España
+- **`analizador_revista_espana.py`**: Ejemplo de procesador para una Revista España
 
 ### 2️⃣ Análisis de Prensa (5 scripts)
 
-Scripts para el procesamiento de periódicos y prensa generalista con secciones musicales:
+Ejemplos de Scripts para el procesamiento de periódicos y prensa generalista con secciones musicales:
 
 - **`analizador_el_sol.py`**: Análisis del diario El Sol (1918-1936)
 - **`analizador_el_artista.py`**: Procesamiento de la revista El Artista
@@ -72,6 +69,8 @@ Generadores de interfaces web interactivas para visualización de resultados:
 - **Visualización web**: HTML5, CSS3, JavaScript ES6, Chart.js
 - **Almacenamiento**: Archivos JSON para resultados de análisis
 
+Los datos estadísticos posteriormente fueron revisados con otras dos herramientas: Voyant Tools y Skecht Engine
+
 ## 📊 Principales Hallazgos de Investigación
 
 ### Análisis de Género
@@ -79,24 +78,18 @@ Generadores de interfaces web interactivas para visualización de resultados:
 - **Menciones profesionales**: Dominancia masculina de 166.8:1
 - **Evidencia de sesgo institucional** en la cultura musical española
 
-### Diversidad Cultural
-- **1,359 menciones de diversidad** en todo el corpus
-- **Conciencia internacional**: Cobertura de músicos no occidentales
-- **Patrón evolutivo**: Incremento del 70-566% a lo largo del tiempo
-
 ### Vocabulario Musical
 - **Géneros**: Ópera, jazz, rock, flamenco, zarzuela (30+ términos)
 - **Instrumentos**: Piano, guitarra, violín, saxofón (40+ términos)
 - **Términos técnicos**: Armonía, ritmo, melodía, tonalidad (50+ términos)
 - **Espacios**: Teatro, conservatorio, casino, ateneo (20+ términos)
 
-## 📈 Datos Procesados
+## 📈 Datos Procesados en septiembre 2025 (creciendo)
 
 - **25.8 millones de palabras** analizadas
 - **3,238 archivos de texto** procesados
 - **19 revistas musicales** completas
 - **182 años de cobertura** (1842-2024)
-- **Precisión estimada**: 85-90% en identificación de entidades
 
 ## 🚀 Uso de los Scripts
 
