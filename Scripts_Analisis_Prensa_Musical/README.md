@@ -77,7 +77,10 @@ Los datos estadísticos posteriormente fueron revisados con otras dos herramient
 - **Disparidad extrema**: Ratio de 17.8:1 en tratamientos formales masculinos vs. femeninos
 - **Menciones profesionales**: Dominancia masculina de 166.8:1
 - **Evidencia de sesgo institucional** en la cultura musical española
-
+- Mejorado en nuestro [**Detector de Género 
+  Musical**](https://github.com/LeximusUSAL/detector-genero-musical) 🎵 disponible
+  en GitHub.
+  
 ### Vocabulario Musical
 - **Géneros**: Ópera, jazz, rock, flamenco, zarzuela (30+ términos)
 - **Instrumentos**: Piano, guitarra, violín, saxofón (40+ términos)
