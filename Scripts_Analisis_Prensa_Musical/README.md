@@ -15,6 +15,9 @@ Este repositorio contiene las principales herramientas de procesamiento de lengu
 
 ## 📂 Estructura del Repositorio
 
+Además de los scripts específcos para revistas y prensa también hemos utilizado un script básico para buscar palabras clave en cualquier corpus de textos txt. Este recurso lo puedes encontrar aquí.  [**Búsquedas por palabras clave**](https://github.com/LeximusUSAL/buscador-palabras-corpus/blob/main/README.md) 🎵 disponible en GitHub.
+
+
 ### 1️⃣ Análisis de Revistas Musicales (6 scripts)
 
 Scripts especializados para el procesamiento de revistas musicales especializadas:
