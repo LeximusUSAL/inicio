@@ -74,6 +74,66 @@ Generadores de interfaces web interactivas para visualización de resultados:
 
 Los datos estadísticos posteriormente fueron revisados con otras dos herramientas: Voyant Tools y Skecht Engine
 
+### 📦 Librerías y Dependencias Python
+
+**IMPORTANTE**: Este proyecto **NO utiliza ML/NLP avanzado** (como spaCy, NLTK, transformers o modelos de lenguaje). En su lugar, emplea **análisis basado en expresiones regulares y patrones** para extracción de entidades musicales, haciendo el proyecto más ligero, reproducible y transparente académicamente.
+
+#### Librerías Estándar de Python (incluidas por defecto)
+- `os` - Operaciones del sistema de archivos y navegación de directorios
+- `re` - Expresiones regulares para análisis de texto y extracción de patrones
+- `json` - Serialización y deserialización de datos JSON
+- `glob` - Búsqueda de archivos mediante patrones de nombres
+- `collections` (Counter, defaultdict) - Estructuras de datos para conteos y agrupaciones
+- `datetime` - Manejo de fechas y marcas temporales
+- `pathlib.Path` - Manipulación de rutas de archivos orientada a objetos
+- `unicodedata` - Normalización de caracteres Unicode y diacríticos
+- `subprocess` - Ejecución de comandos externos del sistema
+- `io.StringIO` - Operaciones de entrada/salida en memoria
+- `typing` (List, Dict, Any) - Anotaciones de tipos para código más robusto
+
+#### Librerías Externas (requieren instalación)
+
+**Procesamiento de PDFs**:
+- **PyMuPDF (fitz)** - Extracción eficiente de texto desde archivos PDF
+- **pdfminer.six** - Análisis detallado de estructura y layout de PDFs
+  - `pdfminer.high_level.extract_text` - Extracción de texto de alto nivel
+  - `pdfminer.converter.TextConverter` - Conversión de PDF a texto plano
+  - `pdfminer.layout.LAParams` - Parámetros de análisis de diseño
+  - `pdfminer.pdfinterp` (PDFResourceManager, PDFPageInterpreter) - Interpretación de contenido PDF
+  - `pdfminer.pdfpage.PDFPage` - Manejo de páginas individuales
+
+**OCR (Reconocimiento Óptico de Caracteres)**:
+- **pytesseract** - Interfaz Python para Tesseract OCR Engine
+- **pdf2image** - Conversión de páginas PDF a imágenes para procesamiento OCR
+- **Pillow (PIL)** - Procesamiento y manipulación de imágenes
+
+#### Instalación de Dependencias
+
+```bash
+# Instalar todas las librerías externas necesarias
+pip install PyMuPDF pdfminer.six pytesseract pdf2image Pillow
+
+# Para usar Tesseract OCR, también necesitas instalarlo en el sistema:
+# macOS:
+brew install tesseract tesseract-lang
+
+# Ubuntu/Debian:
+sudo apt-get install tesseract-ocr tesseract-ocr-spa
+
+# Windows:
+# Descargar desde: https://github.com/UB-Mannheim/tesseract/wiki
+```
+
+#### Archivo requirements.txt
+
+```txt
+PyMuPDF>=1.23.0
+pdfminer.six>=20221105
+pytesseract>=0.3.10
+pdf2image>=1.16.3
+Pillow>=10.0.0
+```
+
 ## 📊 Principales Hallazgos de Investigación
 
 ### Análisis de Género

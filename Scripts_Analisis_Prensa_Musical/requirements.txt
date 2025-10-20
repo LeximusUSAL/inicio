@@ -1,0 +1,21 @@
+# Dependencias Python para Scripts de Análisis de Prensa Musical Española
+# Proyecto LexiMus - Universidad de Salamanca
+# Instalación: pip install -r requirements.txt
+
+# Procesamiento de PDFs
+PyMuPDF>=1.23.0
+pdfminer.six>=20221105
+
+# OCR (Reconocimiento Óptico de Caracteres)
+pytesseract>=0.3.10
+pdf2image>=1.16.3
+Pillow>=10.0.0
+
+# NOTA: Tesseract OCR debe instalarse separadamente en el sistema
+# macOS: brew install tesseract tesseract-lang
+# Ubuntu/Debian: sudo apt-get install tesseract-ocr tesseract-ocr-spa
+# Windows: https://github.com/UB-Mannheim/tesseract/wiki
+
+# IMPORTANTE: Este proyecto NO utiliza librerías de ML/NLP avanzado
+# (spaCy, NLTK, transformers). El análisis se basa en expresiones
+# regulares y patrones para mayor transparencia académica.
