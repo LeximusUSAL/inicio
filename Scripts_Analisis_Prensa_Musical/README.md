@@ -64,6 +64,17 @@ Generadores de interfaces web interactivas para visualización de resultados:
 
 **Características**: Visualizaciones interactivas, gráficos estadísticos, diseño responsive HTML5/CSS3/JavaScript ES6.
 
+### 5️⃣ Reconocimiento de Entidades Musicales — LexiMus NER
+
+Extractor de personas y agrupaciones musicales históricas basado en un listado curado de 1.035 entidades (compositores, intérpretes, cantantes, agrupaciones). Busca todas las entidades en cualquier corpus de archivos `.txt` usando expresiones regulares, sin dependencias externas.
+
+- **1.035 entidades curadas** a partir del corpus ONDAS (1925–1935) y otras publicaciones
+- **Sin dependencias**: solo Python 3.7+ estándar, sin instalar spaCy ni ninguna otra librería
+- **Tres salidas**: listado `.txt`, datos completos `.json` e interfaz web interactiva de revisión `.html`
+- **Extensible**: añade nuevas entidades al CSV y el script las detecta en la siguiente ejecución
+
+→ [**LexiMus NER**](https://github.com/LeximusUSAL/leximus-ner) · [Guía de uso y descarga](https://leximususal.github.io/leximus-ner) 🎵 disponible en GitHub.
+
 ## 🛠️ Tecnologías Utilizadas
 
 - **Python 3**: Lenguaje principal de análisis
