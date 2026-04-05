@@ -64,34 +64,103 @@ Generadores de interfaces web interactivas para visualización de resultados:
 
 **Características**: Visualizaciones interactivas, gráficos estadísticos, diseño responsive HTML5/CSS3/JavaScript ES6.
 
-### 5️⃣ Reconocimiento de Entidades Musicales — LexiMus NER
-
-Extractor de personas y agrupaciones musicales históricas basado en un listado curado de 1.035 entidades (compositores, intérpretes, cantantes, agrupaciones). Busca todas las entidades en cualquier corpus de archivos `.txt` usando expresiones regulares, sin dependencias externas.
-
-- **1.035 entidades curadas** a partir del corpus ONDAS (1925–1935) y otras publicaciones
-- **Sin dependencias**: solo Python 3.7+ estándar, sin instalar spaCy ni ninguna otra librería
-- **Tres salidas**: listado `.txt`, datos completos `.json` e interfaz web interactiva de revisión `.html`
-- **Extensible**: añade nuevas entidades al CSV y el script las detecta en la siguiente ejecución
-
-→ [**LexiMus NER**](https://github.com/LeximusUSAL/leximus-ner) · [Guía de uso y descarga](https://leximususal.github.io/leximus-ner) 🎵 disponible en GitHub.
-
-
 ### 5️⃣ Entrenamiento del Modelo LexiMus-NER — Fine-tuning BETO
 
-Script de entrenamiento del modelo especializado para reconocimiento de personas y agrupaciones musicales en prensa histórica española. Realiza fine-tuning conjunto del transformer BETO y la capa NER sobre corpus anotado manualmente, con pipeline completo de preparación de datos.
+Sistema completo de reconocimiento de entidades musicales en prensa histórica española, compuesto por dos herramientas complementarias: un extractor basado en gazetteer (sin ML) y un script de entrenamiento mediante fine-tuning de BETO.
 
-- **Modelo base**: `es_dep_news_trf` (spaCy + BETO)
-- **Fine-tuning**: transformer + capa NER (parser, POS, morfología congelados)
-- **Entity Ruler**: gazetteer integrado con 1.035 entidades conocidas
-- **Hard negatives**: ejemplos sin entidades para reducir falsos positivos
-- **Oversampling**: compensación automática de la clase minoritaria (AGRUPACION x3)
-- **Dataset**: publicado en Zenodo · [https://doi.org/10.5281/zenodo.19429405](https://doi.org/10.5281/zenodo.19429405)
+---
 
-**Resultados v7** (referencia): F1 global = 0.869 · Precisión = 0.934 · Recall = 0.813
+#### 5a. Extractor basado en gazetteer (sin dependencias ML)
 
-**Dependencias adicionales**:
+Extractor de personas y agrupaciones musicales basado en un listado curado de 1.035 entidades (compositores, intérpretes, cantantes, agrupaciones). Busca todas las entidades en cualquier corpus de archivos `.txt` usando expresiones regulares.
+
+- **1.035 entidades curadas** a partir del corpus ONDAS (1925–1935) y otras publicaciones
+- **Sin dependencias**: solo Python 3.7+ estándar
+- **Tres salidas**: listado `.txt`, datos completos `.json` e interfaz web interactiva de revisión `.html`
+- **Extensible**: añade nuevas entidades al CSV y el script las detecta automáticamente
+
+→ [**LexiMus NER**](https://github.com/LeximusUSAL/leximus-ner) · [Guía de uso y descarga](https://leximususal.github.io/leximus-ner) disponible en GitHub.
+
+---
+
+#### 5b. Script de entrenamiento — Fine-tuning BETO con spaCy
+
+→ [**`entrenar_leximus_ner_v8.py`**](5_Entrenamiento_NER_LexiMus/entrenar_leximus_ner_v8.py)
+
+Script de fine-tuning del modelo NER especializado en música histórica española. A diferencia del extractor por gazetteer, este modelo **generaliza** a entidades no catalogadas previamente.
+
+**Arquitectura del modelo**:
+
+| Capa | Componente | Estado |
+|------|-----------|--------|
+| Base | `es_dep_news_trf` (spaCy + BETO) | Congelada |
+| Fine-tuning | Transformer BETO + capa NER | Re-entrenada |
+| Gazetteer | Entity Ruler con 1.035 entidades | Congelado |
+
+El pipeline completo (parser, POS tagger, morfologizador, lematizador) se congela durante el entrenamiento. Solo se re-entrenan el transformer y la capa NER.
+
+**Etiquetas**:
+
+| Etiqueta | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `COMPOSITOR` | Compositor de obras musicales | *Manuel de Falla*, *Saco del Valle* |
+| `INTERPRETE` | Intérprete instrumental o director | *Ricardo Villa*, *Eugenio Goossens* |
+| `CANTANTE` | Cantante (ópera, zarzuela, popular) | *Hipólito Lázaro*, *Pepita Embil* |
+| `AGRUPACION` | Conjunto musical con nombre propio | *Orquesta Filarmónica*, *Banda Municipal* |
+
+**Corpus de entrenamiento (v8)**:
+
+| Fuente | Tipo | Docs | Entidades |
+|--------|------|------|-----------|
+| `train_v7.spacy` | Corpus base acumulado | 2.733 | 8.536 |
+| `test_ampliado_positivos.json` | Positivos nuevos validados (H) | 1.056 | 1.056 |
+| `test_ampliado_negativos.json` | Hard negatives revisión actual (G) | 144 | 0 |
+| `negativos_ciclos_anteriores.json` | Hard negatives ciclos anteriores (G) | 78 | 0 |
+| `dev_v6.spacy` | Validación | 394 | 1.003 |
+| `test_reannotado.spacy` | Test (evaluación final) | 60 | 139 |
+
+**Pipeline de preparación de datos** (8 pasos):
+1. Carga del modelo base v7
+2. Carga del corpus existente (`.spacy`)
+3. Conversión de nuevos datos JSON → spaCy Docs
+4. Fusión de corpus (positivos + hard negatives)
+5. Detección y resolución automática de inconsistencias de etiquetas
+6. Oversampling de AGRUPACION (×3) por ser clase minoritaria
+7. Entrenamiento con early stopping (`patience=12`, hasta 40 épocas)
+8. Evaluación final del `model-best` en dev y test
+
+**Hiperparámetros**:
+
+```python
+MAX_EPOCHS    = 40
+PATIENCE      = 12       # early stopping
+DROPOUT       = 0.1
+BATCH_SIZE    = 8
+LR_MAX        = 5e-5     # learning rate máximo (tras warmup)
+LR_MIN        = 5e-6     # learning rate inicial (warmup)
+WARMUP_EPOCHS = 3        # épocas de warmup lineal
+DECAY_FACTOR  = 0.95     # decay por época tras warmup
+OVERSAMPLE_FACTOR = 3    # oversampling AGRUPACION
+SEED          = 42
+```
+
+**Resultados v7** (referencia para comparar con v8):
+
+| Clase | F1 | Precisión | Recall |
+|-------|----|-----------|--------|
+| GLOBAL | **0.869** | 0.934 | 0.813 |
+| COMPOSITOR | 0.924 | 1.000 | 0.859 |
+| INTERPRETE | 0.839 | 0.867 | 0.812 |
+| CANTANTE | 0.821 | 0.842 | 0.800 |
+| AGRUPACION | 0.741 | 0.909 | 0.625 |
+
+**Dataset publicado**: [https://doi.org/10.5281/zenodo.19429405](https://doi.org/10.5281/zenodo.19429405) — formato CoNLL TSV (IOB2), licencia CC BY 4.0.
+
+**Guía de anotación**: [https://leximususal.github.io/leximus-ner-guia-anotacion/](https://leximususal.github.io/leximus-ner-guia-anotacion/)
+
+**Dependencias**:
 ```bash
-pip install spacy thinc
+pip install spacy thinc torch
 python3 -m spacy download es_dep_news_trf
 ```
 
@@ -108,7 +177,22 @@ python3 entrenar_leximus_ner_v8.py \
     --output-dir leximus_ner_v8_trf
 ```
 
-→ [**Script de entrenamiento**](5_Entrenamiento_NER_LexiMus/entrenar_leximus_ner_v8.py) disponible en este repositorio.
+**Estructura de directorios esperada**:
+```
+base-dir/
+├── entrenar_leximus_ner_v8.py
+├── entidades_ner_leximus.csv      ← gazetteer
+├── train_v7.spacy
+├── dev_v6.spacy
+├── test_reannotado.spacy
+├── leximus_ner_v7_trf/model-best/ ← modelo base
+└── leximus_ner_v8_trf/            ← salida (se crea automáticamente)
+
+neg-dir/  (por defecto: base-dir/negativos/)
+├── test_ampliado_positivos.json
+├── test_ampliado_negativos.json
+└── negativos_ciclos_anteriores.json
+```
 
 ## 🛠️ Tecnologías Utilizadas
 
