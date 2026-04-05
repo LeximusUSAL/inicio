@@ -76,7 +76,7 @@ Extractor de personas y agrupaciones musicales históricas basado en un listado 
 → [**LexiMus NER**](https://github.com/LeximusUSAL/leximus-ner) · [Guía de uso y descarga](https://leximususal.github.io/leximus-ner) 🎵 disponible en GitHub.
 
 
-### 6️⃣ Entrenamiento del Modelo LexiMus-NER — Fine-tuning BETO
+### 5️⃣ Entrenamiento del Modelo LexiMus-NER — Fine-tuning BETO
 
 Script de entrenamiento del modelo especializado para reconocimiento de personas y agrupaciones musicales en prensa histórica española. Realiza fine-tuning conjunto del transformer BETO y la capa NER sobre corpus anotado manualmente, con pipeline completo de preparación de datos.
 
@@ -108,7 +108,7 @@ python3 entrenar_leximus_ner_v8.py \
     --output-dir leximus_ner_v8_trf
 ```
 
-→ [**Script de entrenamiento**](6_Entrenamiento_NER_LexiMus/entrenar_leximus_ner_v8.py) disponible en este repositorio.
+→ [**Script de entrenamiento**](5_Entrenamiento_NER_LexiMus/entrenar_leximus_ner_v8.py) disponible en este repositorio.
 
 ## 🛠️ Tecnologías Utilizadas
 
