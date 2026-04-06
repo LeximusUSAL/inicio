@@ -3,20 +3,23 @@
 """
 entrenar_leximus_ner_v8.py
 ──────────────────────────
-Estrategia v8 — Evaluación limpia sobre 1.200 entidades revisadas manualmente
+Estrategia v8 — Dev set alineado con evaluación manual
 
-  ENTRENAMIENTO: corpus anterior a la revisión de 1.200 entidades
-    - train_v6.spacy          (corpus base limpio, sin oversampling de v7)
+  ENTRENAMIENTO:
+    - train_v6.spacy                    (corpus base limpio, sin oversampling de v7)
     - negativos_ciclos_anteriores.json  (78 hard negatives de ciclos previos)
 
-  TEST SET FIJO (1.200 revisadas manualmente, NUNCA usadas en training):
-    - test_ampliado_positivos.json  (1.056 docs positivos)
-    - test_ampliado_negativos.json  (144 docs negativos / FP)
+  DEV (early stopping) — 900 docs de la revisión manual de 1.200:
+    - 75% de test_ampliado_positivos.json  (~792 docs)
+    - 75% de test_ampliado_negativos.json  (~108 docs)
 
-  DEV (early stopping durante entrenamiento):
-    - dev_v6.spacy
+  TEST FINAL — 300 docs restantes de la revisión manual:
+    - 25% de test_ampliado_positivos.json  (~264 docs)
+    - 25% de test_ampliado_negativos.json  (~36 docs)
 
   Referencia comparativa: v7 evaluado manualmente (F1 global = 0.869)
+
+  La partición 75/25 usa SEED=42 → reproducible.
 
 Mantiene las 4 etiquetas: COMPOSITOR, INTERPRETE, CANTANTE, AGRUPACION.
 
@@ -48,16 +51,14 @@ DIR_NEG     = Path("/Users/maria/Desktop/NEGATIVOS_ENTRENAMIENTO_NER")
 MODELO_BASE = DIR_BASE / "leximus_ner_v7_trf" / "model-best"
 CSV_RULER   = DIR_BASE / "entidades_ner_leximus.csv"
 TRAIN_BASE  = DIR_BASE / "train_v6.spacy"       # corpus base, sin oversampling de v7
-DEV_IN      = DIR_BASE / "dev_v6.spacy"
-TEST_REAN   = DIR_BASE / "test_reannotado.spacy" # test interno (60 docs, 139 ents)
 OUTPUT_DIR  = DIR_BASE / "leximus_ner_v8_trf"
 
-# Negativos de ciclos anteriores → van al entrenamiento
-JSON_NEG_ANT   = DIR_NEG / "negativos_ciclos_anteriores.json"
+# Hard negatives de ciclos anteriores → van al entrenamiento
+JSON_NEG_ANT  = DIR_NEG / "negativos_ciclos_anteriores.json"
 
-# Test set fijo de 1.200 revisadas manualmente → SOLO evaluación final
-JSON_TEST_POS  = DIR_NEG / "test_ampliado_positivos.json"
-JSON_TEST_NEG  = DIR_NEG / "test_ampliado_negativos.json"
+# Las 1.200 revisadas manualmente → se parten en dev (900) + test (300)
+JSON_TEST_POS = DIR_NEG / "test_ampliado_positivos.json"
+JSON_TEST_NEG = DIR_NEG / "test_ampliado_negativos.json"
 
 # ─── HIPERPARÁMETROS ─────────────────────────────────────────────────────────
 
@@ -72,7 +73,8 @@ LR_MIN            = 5e-6
 WARMUP_EPOCHS     = 3
 DECAY_FACTOR      = 0.95
 
-OVERSAMPLE_FACTOR = 3   # oversampling AGRUPACION
+OVERSAMPLE_FACTOR = 3       # oversampling AGRUPACION
+DEV_RATIO         = 0.75    # 75% → dev, 25% → test
 
 ETIQUETAS = ["COMPOSITOR", "INTERPRETE", "CANTANTE", "AGRUPACION"]
 
@@ -88,7 +90,6 @@ V7_MANUAL = {
 # ─── CARGA JSON ───────────────────────────────────────────────────────────────
 
 def cargar_json_comentado(path: Path) -> list:
-    """Carga JSON con líneas de comentario // al inicio."""
     texto = path.read_text(encoding="utf-8")
     texto = re.sub(r"^//.*\n", "", texto, flags=re.MULTILINE)
     return json.loads(texto)
@@ -96,11 +97,6 @@ def cargar_json_comentado(path: Path) -> list:
 # ─── CONVERSIÓN JSON → spaCy Docs ────────────────────────────────────────────
 
 def json_a_docs(datos: list, nlp_blank, nombre: str) -> list[Doc]:
-    """
-    Convierte lista de ejemplos JSON a spaCy Docs.
-    Cada item: {texto, entidades: [{inicio, fin, etiqueta, texto}], ...}
-    Los negativos tienen entidades=[] → doc sin entidades (hard negative).
-    """
     docs = []
     errores = 0
     for item in datos:
@@ -125,6 +121,21 @@ def json_a_docs(datos: list, nlp_blank, nombre: str) -> list[Doc]:
             errores += 1
     print(f"  {nombre}: {len(docs)} docs cargados ({errores} errores de span)")
     return docs
+
+def partir_docs(docs: list[Doc], ratio: float, seed: int):
+    """Partición estratificada positivos/negativos con seed fijo."""
+    rng = random.Random(seed)
+    positivos = [d for d in docs if d.ents]
+    negativos = [d for d in docs if not d.ents]
+    rng.shuffle(positivos)
+    rng.shuffle(negativos)
+    corte_pos = int(len(positivos) * ratio)
+    corte_neg = int(len(negativos) * ratio)
+    dev  = positivos[:corte_pos]  + negativos[:corte_neg]
+    test = positivos[corte_pos:]  + negativos[corte_neg:]
+    rng.shuffle(dev)
+    rng.shuffle(test)
+    return dev, test
 
 # ─── FUNCIONES ────────────────────────────────────────────────────────────────
 
@@ -239,15 +250,15 @@ def guardar_docbin(docs: list[Doc], ruta: Path):
 
 def stats(docs: list[Doc], nombre: str):
     c = defaultdict(int)
-    n_negativos = 0
+    n_neg = 0
     for d in docs:
         if not d.ents:
-            n_negativos += 1
+            n_neg += 1
         for e in d.ents:
             c[e.label_] += 1
     total = sum(c.values())
     print(f"  {nombre}: {len(docs)} docs | {total} ents | "
-          f"negativos={n_negativos} | {dict(sorted(c.items()))}")
+          f"negativos={n_neg} | {dict(sorted(c.items()))}")
 
 def evaluar(nlp, ejemplos: list, nombre: str, referencia: dict | None = None):
     sc       = nlp.evaluate(ejemplos)
@@ -269,10 +280,10 @@ def evaluar(nlp, ejemplos: list, nombre: str, referencia: dict | None = None):
     ref_g = referencia.get("global") if referencia else None
     print(f"  {'GLOBAL':<15}  {f1:>7.3f}  {pre:>7.3f}  {rec:>7.3f}  {delta(f1, ref_g):>14}")
     for etq in ETIQUETAS:
-        m    = per_type.get(etq, {})
-        ef1  = m.get("f", 0.0)
-        ep   = m.get("p", 0.0)
-        er   = m.get("r", 0.0)
+        m     = per_type.get(etq, {})
+        ef1   = m.get("f", 0.0)
+        ep    = m.get("p", 0.0)
+        er    = m.get("r", 0.0)
         ref_e = referencia.get(etq) if referencia else None
         print(f"  {etq:<15}  {ef1:>7.3f}  {ep:>7.3f}  {er:>7.3f}  {delta(ef1, ref_e):>14}")
     return f1
@@ -283,10 +294,10 @@ def main():
     random.seed(SEED)
 
     print("=" * 66)
-    print("Fine-tuning NER LexiMus v8 — Evaluación limpia sobre 1.200 revisadas")
+    print("Fine-tuning NER LexiMus v8 — Dev alineado con revisión manual")
     print("=" * 66)
 
-    for ruta in [MODELO_BASE, CSV_RULER, TRAIN_BASE, DEV_IN, TEST_REAN,
+    for ruta in [MODELO_BASE, CSV_RULER, TRAIN_BASE,
                  JSON_NEG_ANT, JSON_TEST_POS, JSON_TEST_NEG]:
         if not ruta.exists():
             raise FileNotFoundError(f"No encontrado: {ruta}")
@@ -298,19 +309,25 @@ def main():
     asegurar_entity_ruler(nlp, CSV_RULER)
     nlp_blank = spacy.blank("es")
 
-    # ── 2. Cargar corpus base ─────────────────────────────────────────────────
-    print(f"\n[2/8] Cargando corpus base (train_v6.spacy)...")
-    train_docs = cargar_docs(TRAIN_BASE, nlp)
-    dev_docs   = cargar_docs(DEV_IN,     nlp)
-    test_docs  = cargar_docs(TEST_REAN,  nlp)
-    stats(train_docs, "TRAIN base (v6)")
-    stats(dev_docs,   "DEV")
-    stats(test_docs,  "TEST interno (reannotado)")
+    # ── 2. Partir las 1.200 revisadas en dev (900) + test (300) ──────────────
+    print(f"\n[2/8] Partiendo 1.200 revisadas manualmente en dev/test ({DEV_RATIO:.0%}/{1-DEV_RATIO:.0%})...")
+    datos_pos = cargar_json_comentado(JSON_TEST_POS)
+    datos_neg = cargar_json_comentado(JSON_TEST_NEG)
+    docs_pos  = json_a_docs(datos_pos, nlp_blank, "Positivos (1.056)")
+    docs_neg  = json_a_docs(datos_neg, nlp_blank, "Negativos (144)")
+    todos_1200 = docs_pos + docs_neg
 
-    # ── 3. Cargar hard negatives de ciclos anteriores ─────────────────────────
-    print(f"\n[3/8] Cargando hard negatives de ciclos anteriores...")
+    dev_docs, test_docs = partir_docs(todos_1200, DEV_RATIO, SEED)
+    stats(dev_docs,  f"DEV  (early stopping, {len(dev_docs)} docs)")
+    stats(test_docs, f"TEST (evaluación final, {len(test_docs)} docs)")
+
+    # ── 3. Cargar corpus de entrenamiento ─────────────────────────────────────
+    print(f"\n[3/8] Cargando corpus de entrenamiento...")
+    train_docs = cargar_docs(TRAIN_BASE, nlp)
+    stats(train_docs, "TRAIN base (v6)")
+
     datos_neg_ant = cargar_json_comentado(JSON_NEG_ANT)
-    docs_neg_ant  = json_a_docs(datos_neg_ant, nlp_blank, "Negativos ciclos anteriores")
+    docs_neg_ant  = json_a_docs(datos_neg_ant, nlp_blank, "Negativos ciclos anteriores (78)")
 
     # ── 4. Fusionar corpus de entrenamiento ───────────────────────────────────
     print(f"\n[4/8] Fusionando corpus base + hard negatives anteriores...")
@@ -371,7 +388,7 @@ def main():
     print(f"\n  LR: warmup {LR_MIN:.0e}→{LR_MAX:.0e} ({WARMUP_EPOCHS} épocas) "
           f"+ decay x{DECAY_FACTOR}/época")
     print(f"  Épocas={MAX_EPOCHS}  Patience={PATIENCE}  Batch={BATCH_SIZE}")
-    print(f"  Train: {len(train_ejs)} ejs  Dev: {len(dev_ejs)} ejs")
+    print(f"  Train: {len(train_ejs)} ejs  Dev: {len(dev_ejs)} ejs  Test: {len(test_docs)} docs")
     print("─" * 66)
     print(f"{'Época':>5}  {'LR':>8}  {'Loss':>10}  {'F1 Dev':>8}  {'P':>7}  {'R':>7}")
     print("─" * 66)
@@ -423,7 +440,7 @@ def main():
     print("\n" + "─" * 66)
     print("RESULTADOS FINALES")
     print("─" * 66)
-    print(f"\nMejor F1 en dev: {mejor_f1:.3f}")
+    print(f"\nMejor F1 en dev (900 revisadas): {mejor_f1:.3f}")
 
     if not mejor_dir.exists():
         print("\n  ⚠ No se guardó ningún model-best.")
@@ -437,30 +454,19 @@ def main():
     else:
         print(f"  ⚠ Entity Ruler NO presente en model-best")
 
-    # 8a. Dev
+    # 8a. Dev (900)
     dev_ejs_best = [Example(nlp_best.make_doc(d.text), d) for d in dev_docs]
-    evaluar(nlp_best, dev_ejs_best, nombre="dev_v6")
+    evaluar(nlp_best, dev_ejs_best, nombre=f"dev_manual ({len(dev_docs)} docs)")
 
-    # 8b. Test interno (test_reannotado.spacy)
+    # 8b. Test final (300) — comparado con v7
     print(f"\n  {'─'*58}")
-    print(f"  TEST INTERNO — test_reannotado.spacy (60 docs, 139 ents)")
+    print(f"  TEST FINAL ({len(test_docs)} docs revisados manualmente) vs v7")
     print(f"  {'─'*58}")
     test_ejs_best = [Example(nlp_best.make_doc(d.text), d) for d in test_docs]
-    evaluar(nlp_best, test_ejs_best, nombre="test_reannotado")
+    evaluar(nlp_best, test_ejs_best,
+            nombre=f"test_manual ({len(test_docs)} docs)", referencia=V7_MANUAL)
 
-    # 8c. Test set fijo: 1.200 entidades revisadas manualmente
-    print(f"\n  {'─'*58}")
-    print(f"  TEST SET 1.200 — revisión manual (positivos + negativos)")
-    print(f"  {'─'*58}")
-    datos_test_pos = cargar_json_comentado(JSON_TEST_POS)
-    datos_test_neg = cargar_json_comentado(JSON_TEST_NEG)
-    docs_test_1200 = (json_a_docs(datos_test_pos, nlp_blank, "Test positivos (1.056)") +
-                      json_a_docs(datos_test_neg, nlp_blank, "Test negativos (144)"))
-    ejs_1200 = [Example(nlp_best.make_doc(d.text), d) for d in docs_test_1200]
-    evaluar(nlp_best, ejs_1200,
-            nombre="test_1200_manual", referencia=V7_MANUAL)
-
-    print(f"\n  Δ F1 = diferencia respecto a v7 evaluado manualmente (1.200 ents).")
+    print(f"\n  Δ F1 = diferencia respecto a v7 evaluado manualmente.")
     print(f"  Positivo = mejora. Negativo = regresión.")
     print(f"\nModelos guardados en:")
     print(f"  {mejor_dir}   ← usar este")
