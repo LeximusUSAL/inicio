@@ -294,7 +294,7 @@ def main():
     random.seed(SEED)
 
     print("=" * 66)
-    print("Fine-tuning NER LexiMus v8 — Dev alineado con revisión manual")
+    print("Fine-tuning NER LexiMus v8 — Dev alineado + Entity Ruler activo en evaluación")
     print("=" * 66)
 
     for ruta in [MODELO_BASE, CSV_RULER, TRAIN_BASE,
@@ -407,7 +407,10 @@ def main():
             nlp.update(lote, drop=DROPOUT, losses=losses, sgd=optimizer)
 
         loss_ner = losses.get("ner", 0.0)
+        # Evaluar con el pipeline completo (NER + Entity Ruler), igual que en producción
+        nlp.enable_pipe("entity_ruler")
         sc  = nlp.evaluate(dev_ejs)
+        nlp.disable_pipe("entity_ruler")
         f1  = sc.get("ents_f", 0.0)
         pre = sc.get("ents_p", 0.0)
         rec = sc.get("ents_r", 0.0)
