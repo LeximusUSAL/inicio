@@ -3,21 +3,20 @@
 """
 entrenar_leximus_ner_v8.py
 ──────────────────────────
-Mejoras respecto a v7:
+Estrategia v8 — Evaluación limpia sobre 1.200 entidades revisadas manualmente
 
-  G) Ejemplos negativos (hard negatives): documentos donde el modelo
-     confundió spans como entidades. Se añaden con entidades=[] para
-     que el modelo aprenda a NO etiquetar esos contextos.
-     Fuentes:
-       - test_ampliado_negativos.json     (144 FP de la revisión actual)
-       - negativos_ciclos_anteriores.json (78 FP de ciclos anteriores)
+  ENTRENAMIENTO: corpus anterior a la revisión de 1.200 entidades
+    - train_v6.spacy          (corpus base limpio, sin oversampling de v7)
+    - negativos_ciclos_anteriores.json  (78 hard negatives de ciclos previos)
 
-  H) Corpus positivo ampliado: 1.056 nuevas entidades validadas
-     manualmente tras pre-revisión con Gemini 3 Flash.
-     Fuente: test_ampliado_positivos.json
+  TEST SET FIJO (1.200 revisadas manualmente, NUNCA usadas en training):
+    - test_ampliado_positivos.json  (1.056 docs positivos)
+    - test_ampliado_negativos.json  (144 docs negativos / FP)
 
-  Test set actualizado: test_reannotado.spacy (60 docs, 139 entidades)
-  en lugar del test original incompleto (80 entidades).
+  DEV (early stopping durante entrenamiento):
+    - dev_v6.spacy
+
+  Referencia comparativa: v7 evaluado manualmente (F1 global = 0.869)
 
 Mantiene las 4 etiquetas: COMPOSITOR, INTERPRETE, CANTANTE, AGRUPACION.
 
@@ -48,15 +47,17 @@ DIR_NEG     = Path("/Users/maria/Desktop/NEGATIVOS_ENTRENAMIENTO_NER")
 
 MODELO_BASE = DIR_BASE / "leximus_ner_v7_trf" / "model-best"
 CSV_RULER   = DIR_BASE / "entidades_ner_leximus.csv"
-TRAIN_BASE  = DIR_BASE / "train_v6.spacy"   # base limpia, sin oversampling de v7
+TRAIN_BASE  = DIR_BASE / "train_v6.spacy"       # corpus base, sin oversampling de v7
 DEV_IN      = DIR_BASE / "dev_v6.spacy"
-TEST_REAN   = DIR_BASE / "test_reannotado.spacy"   # test mejorado (139 ents)
+TEST_REAN   = DIR_BASE / "test_reannotado.spacy" # test interno (60 docs, 139 ents)
 OUTPUT_DIR  = DIR_BASE / "leximus_ner_v8_trf"
 
-# JSONs con nuevos datos
-JSON_POSITIVOS = DIR_NEG / "test_ampliado_positivos.json"
-JSON_NEG_NUEVO = DIR_NEG / "test_ampliado_negativos.json"
+# Negativos de ciclos anteriores → van al entrenamiento
 JSON_NEG_ANT   = DIR_NEG / "negativos_ciclos_anteriores.json"
+
+# Test set fijo de 1.200 revisadas manualmente → SOLO evaluación final
+JSON_TEST_POS  = DIR_NEG / "test_ampliado_positivos.json"
+JSON_TEST_NEG  = DIR_NEG / "test_ampliado_negativos.json"
 
 # ─── HIPERPARÁMETROS ─────────────────────────────────────────────────────────
 
@@ -75,8 +76,8 @@ OVERSAMPLE_FACTOR = 3   # oversampling AGRUPACION
 
 ETIQUETAS = ["COMPOSITOR", "INTERPRETE", "CANTANTE", "AGRUPACION"]
 
-# Métricas v7 en test_reannotado (referencia comparativa)
-V7_TEST = {
+# Métricas v7 evaluadas manualmente sobre 1.200 entidades (referencia)
+V7_MANUAL = {
     "global":     {"f1": 0.869, "p": 0.934, "r": 0.813},
     "COMPOSITOR": {"f1": 0.924, "p": 1.000, "r": 0.859},
     "INTERPRETE": {"f1": 0.839, "p": 0.867, "r": 0.812},
@@ -125,7 +126,7 @@ def json_a_docs(datos: list, nlp_blank, nombre: str) -> list[Doc]:
     print(f"  {nombre}: {len(docs)} docs cargados ({errores} errores de span)")
     return docs
 
-# ─── FUNCIONES REUTILIZADAS DE v7 ────────────────────────────────────────────
+# ─── FUNCIONES ────────────────────────────────────────────────────────────────
 
 def detectar_inconsistencias(docs: list[Doc]) -> dict:
     conteo = defaultdict(lambda: defaultdict(int))
@@ -261,18 +262,19 @@ def evaluar(nlp, ejemplos: list, nombre: str, referencia: dict | None = None):
         d = nuevo - ref_dict.get(key, 0.0)
         return f"{d:+.3f}"
 
+    ref_label = "v7 manual" if referencia else ""
     print(f"\n  Evaluación en {nombre}:")
-    print(f"  {'':15}  {'F1':>7}  {'P':>7}  {'R':>7}  {'Δ F1 vs v7':>11}")
-    print(f"  {'─'*55}")
+    print(f"  {'':15}  {'F1':>7}  {'P':>7}  {'R':>7}  {'Δ F1 vs ' + ref_label:>14}")
+    print(f"  {'─'*58}")
     ref_g = referencia.get("global") if referencia else None
-    print(f"  {'GLOBAL':<15}  {f1:>7.3f}  {pre:>7.3f}  {rec:>7.3f}  {delta(f1, ref_g):>11}")
+    print(f"  {'GLOBAL':<15}  {f1:>7.3f}  {pre:>7.3f}  {rec:>7.3f}  {delta(f1, ref_g):>14}")
     for etq in ETIQUETAS:
         m    = per_type.get(etq, {})
         ef1  = m.get("f", 0.0)
         ep   = m.get("p", 0.0)
         er   = m.get("r", 0.0)
         ref_e = referencia.get(etq) if referencia else None
-        print(f"  {etq:<15}  {ef1:>7.3f}  {ep:>7.3f}  {er:>7.3f}  {delta(ef1, ref_e):>11}")
+        print(f"  {etq:<15}  {ef1:>7.3f}  {ep:>7.3f}  {er:>7.3f}  {delta(ef1, ref_e):>14}")
     return f1
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
@@ -281,11 +283,11 @@ def main():
     random.seed(SEED)
 
     print("=" * 66)
-    print("Fine-tuning NER LexiMus v8 — Mejoras G+H (negativos + corpus ampliado)")
+    print("Fine-tuning NER LexiMus v8 — Evaluación limpia sobre 1.200 revisadas")
     print("=" * 66)
 
     for ruta in [MODELO_BASE, CSV_RULER, TRAIN_BASE, DEV_IN, TEST_REAN,
-                 JSON_POSITIVOS, JSON_NEG_NUEVO, JSON_NEG_ANT]:
+                 JSON_NEG_ANT, JSON_TEST_POS, JSON_TEST_NEG]:
         if not ruta.exists():
             raise FileNotFoundError(f"No encontrado: {ruta}")
 
@@ -296,45 +298,30 @@ def main():
     asegurar_entity_ruler(nlp, CSV_RULER)
     nlp_blank = spacy.blank("es")
 
-    # ── 2. Cargar corpus v7 existente ─────────────────────────────────────────
-    print(f"\n[2/8] Cargando corpus v7...")
+    # ── 2. Cargar corpus base ─────────────────────────────────────────────────
+    print(f"\n[2/8] Cargando corpus base (train_v6.spacy)...")
     train_docs = cargar_docs(TRAIN_BASE, nlp)
-    dev_docs   = cargar_docs(DEV_IN,   nlp)
-    test_docs  = cargar_docs(TEST_REAN, nlp)
-    stats(train_docs, "TRAIN v7 (base)")
+    dev_docs   = cargar_docs(DEV_IN,     nlp)
+    test_docs  = cargar_docs(TEST_REAN,  nlp)
+    stats(train_docs, "TRAIN base (v6)")
     stats(dev_docs,   "DEV")
-    stats(test_docs,  "TEST reannotado")
+    stats(test_docs,  "TEST interno (reannotado)")
 
-    # ── 3. Cargar y convertir nuevos datos (G+H) ──────────────────────────────
-    print(f"\n[3/8] Cargando nuevos datos (positivos + negativos)...")
+    # ── 3. Cargar hard negatives de ciclos anteriores ─────────────────────────
+    print(f"\n[3/8] Cargando hard negatives de ciclos anteriores...")
+    datos_neg_ant = cargar_json_comentado(JSON_NEG_ANT)
+    docs_neg_ant  = json_a_docs(datos_neg_ant, nlp_blank, "Negativos ciclos anteriores")
 
-    datos_pos    = cargar_json_comentado(JSON_POSITIVOS)
-    datos_neg_n  = cargar_json_comentado(JSON_NEG_NUEVO)
-    datos_neg_a  = cargar_json_comentado(JSON_NEG_ANT)
-
-    docs_pos    = json_a_docs(datos_pos,   nlp_blank, "Positivos nuevos (H)")
-    docs_neg_n  = json_a_docs(datos_neg_n, nlp_blank, "Negativos revisión actual (G)")
-    docs_neg_a  = json_a_docs(datos_neg_a, nlp_blank, "Negativos ciclos anteriores (G)")
-
-    n_nuevos_pos = sum(len(d.ents) for d in docs_pos)
-    n_nuevos_neg = len(docs_neg_n) + len(docs_neg_a)
-    print(f"\n  Resumen nuevos datos:")
-    print(f"    Positivos: {len(docs_pos)} docs, {n_nuevos_pos} entidades")
-    print(f"    Negativos: {n_nuevos_neg} docs (hard negatives)")
-
-    # ── 4. Fusionar corpus ────────────────────────────────────────────────────
-    print(f"\n[4/8] Fusionando corpus v7 + nuevos datos...")
-    # Importante: los negativos NO se oversamplean (ya están desbalanceados
-    # intencionadamente para corregir FP específicos)
-    train_docs = train_docs + docs_pos + docs_neg_n + docs_neg_a
+    # ── 4. Fusionar corpus de entrenamiento ───────────────────────────────────
+    print(f"\n[4/8] Fusionando corpus base + hard negatives anteriores...")
+    train_docs = train_docs + docs_neg_ant
     random.shuffle(train_docs)
     stats(train_docs, "TRAIN v8 (fusionado)")
 
     # ── 5. Resolver inconsistencias ───────────────────────────────────────────
     print(f"\n[5/8] Detectando y resolviendo inconsistencias...")
-    # Solo sobre docs con entidades (los negativos no tienen spans que comparar)
-    docs_con_ents  = [d for d in train_docs if d.ents]
-    docs_sin_ents  = [d for d in train_docs if not d.ents]
+    docs_con_ents = [d for d in train_docs if d.ents]
+    docs_sin_ents = [d for d in train_docs if not d.ents]
 
     inconsis = detectar_inconsistencias(docs_con_ents)
     print(f"  Spans inconsistentes: {len(inconsis)}")
@@ -360,7 +347,7 @@ def main():
     print("  Guardado: train_v8.spacy")
 
     # ── 7. Entrenamiento ──────────────────────────────────────────────────────
-    print(f"\n[7/8] Preparando ejemplos...")
+    print(f"\n[7/8] Preparando ejemplos y entrenando...")
     train_ejs = [Example(nlp.make_doc(d.text), d) for d in train_docs]
     dev_ejs   = [Example(nlp.make_doc(d.text), d) for d in dev_docs]
 
@@ -450,18 +437,30 @@ def main():
     else:
         print(f"  ⚠ Entity Ruler NO presente en model-best")
 
-    dev_ejs_best  = [Example(nlp_best.make_doc(d.text), d) for d in dev_docs]
-    evaluar(nlp_best, dev_ejs_best, nombre="dev")
+    # 8a. Dev
+    dev_ejs_best = [Example(nlp_best.make_doc(d.text), d) for d in dev_docs]
+    evaluar(nlp_best, dev_ejs_best, nombre="dev_v6")
 
-    print(f"\n  {'─'*55}")
-    print(f"  TEST SET REANNOTADO — test_reannotado.spacy (60 docs, 139 ents)")
-    print(f"  {'─'*55}")
-
+    # 8b. Test interno (test_reannotado.spacy)
+    print(f"\n  {'─'*58}")
+    print(f"  TEST INTERNO — test_reannotado.spacy (60 docs, 139 ents)")
+    print(f"  {'─'*58}")
     test_ejs_best = [Example(nlp_best.make_doc(d.text), d) for d in test_docs]
-    evaluar(nlp_best, test_ejs_best,
-            nombre="test_reannotado.spacy", referencia=V7_TEST)
+    evaluar(nlp_best, test_ejs_best, nombre="test_reannotado")
 
-    print(f"\n  Δ F1 = diferencia respecto a v7 en el mismo test reannotado.")
+    # 8c. Test set fijo: 1.200 entidades revisadas manualmente
+    print(f"\n  {'─'*58}")
+    print(f"  TEST SET 1.200 — revisión manual (positivos + negativos)")
+    print(f"  {'─'*58}")
+    datos_test_pos = cargar_json_comentado(JSON_TEST_POS)
+    datos_test_neg = cargar_json_comentado(JSON_TEST_NEG)
+    docs_test_1200 = (json_a_docs(datos_test_pos, nlp_blank, "Test positivos (1.056)") +
+                      json_a_docs(datos_test_neg, nlp_blank, "Test negativos (144)"))
+    ejs_1200 = [Example(nlp_best.make_doc(d.text), d) for d in docs_test_1200]
+    evaluar(nlp_best, ejs_1200,
+            nombre="test_1200_manual", referencia=V7_MANUAL)
+
+    print(f"\n  Δ F1 = diferencia respecto a v7 evaluado manualmente (1.200 ents).")
     print(f"  Positivo = mejora. Negativo = regresión.")
     print(f"\nModelos guardados en:")
     print(f"  {mejor_dir}   ← usar este")
