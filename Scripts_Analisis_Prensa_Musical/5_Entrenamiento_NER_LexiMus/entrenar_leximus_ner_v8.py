@@ -227,19 +227,18 @@ def guardar_modelo(nlp, ruta: Path, pipes_activos: list):
         shutil.rmtree(ruta)
     nlp.to_disk(ruta)
 
-    # Verificar entity_ruler y añadirlo desde CSV si se perdió al guardar
+    # Garantizar entity_ruler en model-best con patrones actualizados del CSV.
+    # has_pipe() devuelve False para pipes desactivadas, así que usamos
+    # component_names para detectar su presencia independientemente del estado.
     nlp_check = spacy.load(ruta)
-    if nlp_check.has_pipe("entity_ruler"):
-        ruler = nlp_check.get_pipe("entity_ruler")
-        print(f"  ✓ Entity Ruler verificado en {ruta.name}: {len(ruler)} patrones")
-    else:
-        # select_pipes elimina entity_ruler del config.cfg — lo restauramos
-        patrones = cargar_patrones_csv(CSV_RULER)
-        ruler = nlp_check.add_pipe("entity_ruler", last=True,
-                                    config={"overwrite_ents": False})
-        ruler.add_patterns(patrones)
-        nlp_check.to_disk(ruta)
-        print(f"  ✓ Entity Ruler restaurado en {ruta.name}: {len(ruler)} patrones")
+    if "entity_ruler" in nlp_check.component_names:
+        nlp_check.remove_pipe("entity_ruler")
+    patrones = cargar_patrones_csv(CSV_RULER)
+    ruler = nlp_check.add_pipe("entity_ruler", last=True,
+                                config={"overwrite_ents": False})
+    ruler.add_patterns(patrones)
+    nlp_check.to_disk(ruta)
+    print(f"  ✓ Entity Ruler guardado en {ruta.name}: {len(ruler)} patrones")
     del nlp_check
 
     nlp.select_pipes(enable=pipes_activos)
