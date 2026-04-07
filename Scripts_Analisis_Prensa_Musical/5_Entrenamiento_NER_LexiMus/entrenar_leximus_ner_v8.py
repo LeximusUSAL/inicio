@@ -226,13 +226,22 @@ def guardar_modelo(nlp, ruta: Path, pipes_activos: list):
     if ruta.exists():
         shutil.rmtree(ruta)
     nlp.to_disk(ruta)
+
+    # Verificar entity_ruler y añadirlo desde CSV si se perdió al guardar
     nlp_check = spacy.load(ruta)
     if nlp_check.has_pipe("entity_ruler"):
         ruler = nlp_check.get_pipe("entity_ruler")
         print(f"  ✓ Entity Ruler verificado en {ruta.name}: {len(ruler)} patrones")
     else:
-        print(f"  ⚠ Entity Ruler NO encontrado en {ruta.name}")
+        # select_pipes elimina entity_ruler del config.cfg — lo restauramos
+        patrones = cargar_patrones_csv(CSV_RULER)
+        ruler = nlp_check.add_pipe("entity_ruler", last=True,
+                                    config={"overwrite_ents": False})
+        ruler.add_patterns(patrones)
+        nlp_check.to_disk(ruta)
+        print(f"  ✓ Entity Ruler restaurado en {ruta.name}: {len(ruler)} patrones")
     del nlp_check
+
     nlp.select_pipes(enable=pipes_activos)
 
 def lr_para_epoca(epoca: int) -> float:
