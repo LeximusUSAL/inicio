@@ -206,7 +206,7 @@ Los datos estadísticos posteriormente fueron revisados con otras dos herramient
 
 ### 📦 Librerías y Dependencias Python
 
-**IMPORTANTE**: Este proyecto **NO utiliza ML/NLP avanzado** (como spaCy, NLTK, transformers o modelos de lenguaje). En su lugar, emplea **análisis basado en expresiones regulares y patrones** para extracción de entidades musicales, haciendo el proyecto más ligero, reproducible y transparente académicamente.
+**NER**: El NER LexiMus **utiliza ML/NLP avanzado** (spaCy + transformers BETO). El Modelo refinado está publicado en [nuestro Hagging Face](https://huggingface.co/LexiMusUSAL/)
 
 #### Librerías Estándar de Python (incluidas por defecto)
 - `os` - Operaciones del sistema de archivos y navegación de directorios
