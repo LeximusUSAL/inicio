@@ -3,771 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LexiMus - Léxico y Ontología de la Música en Español</title>
+    <meta http-equiv="refresh" content="12;url=https://leximus.usal.es">
+    <title>LexiMus — Nos hemos trasladado · leximus.usal.es</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-primary: #f8fafc;
             --bg-secondary: #f1f5f9;
-            --bg-tertiary: #e2e8f0;
             --accent-primary: #008a9b;
             --accent-secondary: #00a0b4;
-            --accent-tertiary: #006d7a;
             --text-primary: #1e293b;
             --text-secondary: #475569;
             --text-tertiary: #64748b;
-            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-bg: rgba(255, 255, 255, 0.75);
             --glass-border: rgba(148, 163, 184, 0.2);
             --shadow-primary: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
             --shadow-glow: 0 0 40px rgba(0, 138, 155, 0.2);
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             line-height: 1.6;
             color: var(--text-primary);
             background: var(--bg-primary);
-            overflow-x: hidden;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
         }
-
         body::before {
             content: '';
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(0, 138, 155, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(0, 160, 180, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(0, 109, 122, 0.1) 0%, transparent 50%),
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(0, 138, 155, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 160, 180, 0.10) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(0, 109, 122, 0.10) 0%, transparent 50%),
                 linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
             z-index: -2;
-            animation: gradientShift 15s ease-in-out infinite;
         }
-
-        @keyframes gradientShift {
-            0%, 100% {
-                background: 
-                    radial-gradient(circle at 20% 50%, rgba(0, 138, 155, 0.1) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 20%, rgba(0, 160, 180, 0.1) 0%, transparent 50%),
-                    radial-gradient(circle at 40% 80%, rgba(0, 109, 122, 0.1) 0%, transparent 50%);
-            }
-            50% {
-                background: 
-                    radial-gradient(circle at 80% 30%, rgba(0, 138, 155, 0.15) 0%, transparent 50%),
-                    radial-gradient(circle at 20% 70%, rgba(0, 160, 180, 0.15) 0%, transparent 50%),
-                    radial-gradient(circle at 60% 20%, rgba(0, 109, 122, 0.15) 0%, transparent 50%);
-            }
-        }
-
         .noise {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.015;
-            z-index: -1;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            position: fixed; inset: 0; opacity: 0.015; z-index: -1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
         }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-        }
-
-        .floating-orbs {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(40px);
-            animation: float 20s infinite linear;
-        }
-
-        .orb:nth-child(1) {
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(0, 138, 155, 0.2) 0%, transparent 70%);
-            top: 10%;
-            left: 10%;
-            animation-duration: 25s;
-        }
-
-        .orb:nth-child(2) {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(0, 160, 180, 0.2) 0%, transparent 70%);
-            top: 60%;
-            right: 10%;
-            animation-duration: 30s;
-            animation-direction: reverse;
-        }
-
-        .orb:nth-child(3) {
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle, rgba(0, 109, 122, 0.2) 0%, transparent 70%);
-            top: 40%;
-            left: 50%;
-            animation-duration: 20s;
-            animation-delay: -10s;
-        }
-
+        .orb { position: fixed; border-radius: 50%; filter: blur(60px); pointer-events: none; }
+        .orb-1 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(0,138,155,0.18) 0%, transparent 70%); top: -10%; left: -5%; animation: float 28s infinite linear; }
+        .orb-2 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(0,160,180,0.15) 0%, transparent 70%); bottom: -5%; right: -5%; animation: float 32s infinite linear reverse; }
         @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            25% { transform: translateY(-20px) rotate(90deg); }
-            50% { transform: translateY(0px) rotate(180deg); }
-            75% { transform: translateY(-10px) rotate(270deg); }
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-30px) scale(1.05); }
         }
-
-        .header {
-            text-align: center;
-            margin-bottom: 4rem;
+        .card {
             background: var(--glass-bg);
-            backdrop-filter: blur(24px) saturate(180%);
+            backdrop-filter: blur(28px) saturate(180%);
             border: 1px solid var(--glass-border);
-            border-radius: 32px;
-            padding: 4rem 3rem;
+            border-radius: 36px;
+            padding: 4rem 3.5rem;
+            max-width: 780px;
+            width: calc(100% - 2rem);
+            text-align: center;
             box-shadow: var(--shadow-primary), var(--shadow-glow);
             position: relative;
             overflow: hidden;
+            animation: cardIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
-
-        .hero-image {
-            width: 100%;
-            max-width: 600px;
-            height: 300px;
-            object-fit: cover;
-            border-radius: 24px;
-            margin: 2rem auto;
-            display: block;
-            opacity: 0.8;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(32px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
-
-        .hero-image:hover {
-            opacity: 1;
-            transform: scale(1.02);
-            box-shadow: 0 30px 60px rgba(99, 102, 241, 0.2);
-        }
-
-        @media (max-width: 768px) {
-            .hero-image {
-                height: 200px;
-                margin: 1.5rem auto;
-            }
-        }
-
-        .header::before {
+        .card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
         }
-
-        .header .logo {
-            max-height: 200px;
-            width: auto;
-            margin: 0 auto 1.5rem auto;
-            display: block;
-            filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.3));
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, rgba(0,138,155,0.12), rgba(0,160,180,0.12));
+            border: 1px solid rgba(0,138,155,0.25);
+            color: var(--accent-primary);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            margin-bottom: 2rem;
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0,138,155,0.15); }
+            50% { box-shadow: 0 0 0 8px rgba(0,138,155,0); }
+        }
+        .badge-dot {
+            width: 7px; height: 7px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            animation: blink 1.8s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .logo {
+            max-height: 160px; width: auto;
+            display: block; margin: 0 auto 2rem;
+            filter: drop-shadow(0 4px 16px rgba(0,138,155,0.2));
             transition: transform 0.3s ease;
         }
-
-        .header .logo:hover {
-            transform: scale(1.05);
-        }
-
-        .main-title {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-            font-size: 1.8rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin: 1.5rem 0 1rem 0;
-            text-align: center;
-            opacity: 0.9;
-            letter-spacing: -0.02em;
-            line-height: 1.4;
-        }
-
-        @keyframes gradientFlow {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .project-code {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            margin: 0.5rem 0 2rem 0;
-            font-weight: 500;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            opacity: 0.8;
-            padding: 0.8rem 2rem;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 50px;
-            display: inline-block;
-            position: relative;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .project-code:hover {
-            opacity: 1;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 138, 155, 0.15);
-        }
-
-        .project-code::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 50px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: -1;
-        }
-
-        .project-code:hover::before {
-            opacity: 0.05;
-        }
-
-        .subtitle {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            margin: 0.5rem 0 1.5rem 0;
-            font-weight: 500;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            opacity: 0.8;
-            padding: 0.8rem 2rem;
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 50px;
-            display: inline-block;
-            position: relative;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .subtitle:hover {
-            opacity: 1;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 138, 155, 0.15);
-        }
-
-        .subtitle::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: 50px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: -1;
-        }
-
-        .subtitle:hover::before {
-            opacity: 0.05;
-        }
-
-        .description {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            max-width: 900px;
-            margin: 0 auto 3rem;
-            text-align: center;
-            line-height: 1.8;
-            opacity: 0.95;
-        }
-
-        .institutions {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            margin: 3rem 0;
-        }
-
-        .institution {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(12px);
-            padding: 1rem 2rem;
-            border-radius: 24px;
-            font-size: 1rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .institution::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(0, 138, 155, 0.1) 0%, rgba(0, 160, 180, 0.1) 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .institution:hover::before {
-            opacity: 1;
-        }
-
-        .institution:hover {
-            transform: translateY(-2px);
-            color: var(--text-primary);
-            box-shadow: 0 8px 32px rgba(0, 138, 155, 0.2);
-        }
-
-        .access-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 3rem;
-            margin: 5rem 0;
-        }
-
-        .access-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            padding: 3rem;
-            border-radius: 32px;
-            text-align: center;
-            box-shadow: var(--shadow-primary);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            group: hover;
-        }
-
-        .access-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-        }
-
-        .access-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0, 138, 155, 0.1) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-
-        .access-card:hover::after {
-            opacity: 1;
-        }
-
-        .access-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: var(--shadow-primary), var(--shadow-glow);
-            border-color: rgba(0, 138, 155, 0.3);
-        }
-
-        .access-card h3 {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
-            font-weight: 700;
-            position: relative;
-            z-index: 1;
-        }
-
-        .access-card p {
-            color: var(--text-secondary);
-            margin-bottom: 2.5rem;
-            font-size: 1.1rem;
-            line-height: 1.7;
-            position: relative;
-            z-index: 1;
-        }
-
-        .access-btn {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: var(--text-primary);
-            padding: 1.2rem 3rem;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 
-                0 8px 32px rgba(0, 138, 155, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .access-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.6s;
-        }
-
-        .access-btn:hover::before {
-            left: 100%;
-        }
-
-        .access-btn:hover {
-            transform: translateY(-4px) scale(1.05);
-            box-shadow: 
-                0 16px 48px rgba(0, 138, 155, 0.6),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-        }
-
-        .stats {
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            padding: 4rem 3rem;
-            border-radius: 32px;
-            margin: 5rem 0;
-            box-shadow: var(--shadow-primary);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stats::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-        }
-
-        .stats h3 {
-            text-align: center;
-            margin-bottom: 3rem;
-            color: var(--text-primary);
-            font-size: 2.5rem;
+        .logo:hover { transform: scale(1.04); }
+        h1 {
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
             font-weight: 800;
-            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            margin-bottom: 1rem;
         }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
-            text-align: center;
-        }
-
-        .stat-item {
-            padding: 2rem 1rem;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-
-        .stat-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(0, 138, 155, 0.05) 0%, rgba(0, 160, 180, 0.05) 100%);
-            border-radius: 24px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .stat-item:hover::before {
-            opacity: 1;
-        }
-
-        .stat-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(0, 138, 155, 0.2);
-        }
-
-        .stat-number {
-            font-size: 3.5rem;
-            font-weight: 900;
+        h1 span {
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            display: block;
-            margin-bottom: 0.5rem;
         }
-
-        .stat-label {
+        .lead {
+            font-size: 1.1rem;
             color: var(--text-secondary);
-            font-size: 1rem;
-            font-weight: 500;
-            margin-top: 1rem;
+            max-width: 560px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.75;
         }
-
-        .footer {
-            text-align: center;
-            margin-top: 5rem;
-            padding: 2rem;
-            color: var(--text-tertiary);
-            font-size: 1rem;
-            line-height: 1.8;
-        }
-
-        .footer a {
-            color: var(--text-secondary);
+        .new-url {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: #fff;
+            font-size: 1.15rem;
+            font-weight: 700;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0,138,155,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            margin-bottom: 2.5rem;
             position: relative;
+            overflow: hidden;
         }
-
-        .footer a::after {
+        .new-url::before {
             content: '';
             position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
-            transition: width 0.3s ease;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s;
         }
-
-        .footer a:hover::after {
-            width: 100%;
+        .new-url:hover::before { left: 100%; }
+        .new-url:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 16px 48px rgba(0,138,155,0.55), inset 0 1px 0 rgba(255,255,255,0.3);
         }
-
-        .footer a:hover {
-            color: var(--text-primary);
+        .divider { border: none; border-top: 1px solid var(--glass-border); margin: 2rem 0; }
+        .github-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: rgba(255,255,255,0.5);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.25rem 1.5rem;
+            text-align: left;
+            margin-bottom: 2rem;
         }
-
+        .github-icon {
+            flex-shrink: 0;
+            width: 36px; height: 36px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: 2px;
+        }
+        .github-note p { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; }
+        .github-note a { color: var(--accent-primary); font-weight: 600; text-decoration: none; }
+        .github-note a:hover { text-decoration: underline; }
+        .countdown { font-size: 0.88rem; color: var(--text-tertiary); margin-top: 0.5rem; }
+        .countdown strong { color: var(--accent-primary); font-weight: 700; font-size: 1rem; }
         .logos-section {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 2rem;
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             flex-wrap: wrap;
+            opacity: 0.75;
         }
-
-        .logo-img {
-            max-height: 80px;
-            width: auto;
-            opacity: 0.9;
-            transition: all 0.3s ease;
-        }
-
-        .logo-img:hover {
-            opacity: 1;
-            transform: scale(1.05);
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-
-            .header .logo {
-                max-height: 120px;
-                margin: 0 auto 1rem auto;
-                display: block;
-            }
-
-            .main-title {
-                font-size: 1.4rem;
-                margin: 1rem 0 0.8rem 0;
-            }
-
-            .header {
-                padding: 3rem 2rem;
-                margin-bottom: 3rem;
-            }
-
-            .access-card {
-                padding: 2.5rem 2rem;
-            }
-
-            .stats {
-                padding: 3rem 2rem;
-            }
-
-            .stats h3 {
-                font-size: 2rem;
-            }
-
-            .stat-number {
-                font-size: 2.5rem;
-            }
-
-            .institutions {
-                gap: 1rem;
-            }
-
-            .institution {
-                padding: 0.8rem 1.5rem;
-                font-size: 0.9rem;
-            }
-
-            .orb {
-                display: none;
-            }
-
-            .logos-section {
-                gap: 1rem;
-            }
-
-            .logo-img {
-                max-height: 60px;
-            }
+        .logo-img { max-height: 56px; width: auto; transition: opacity 0.3s; }
+        .logo-img:hover { opacity: 1; }
+        @media (max-width: 600px) {
+            .card { padding: 3rem 1.75rem; border-radius: 28px; }
+            .new-url { font-size: 1rem; padding: 0.9rem 1.75rem; }
+            .github-note { flex-direction: column; gap: 0.75rem; }
+            .logos-section { gap: 1.25rem; }
+            .logo-img { max-height: 44px; }
+            .orb-1, .orb-2 { display: none; }
         }
     </style>
 </head>
 <body>
     <div class="noise"></div>
-    <div class="container">
-        <div class="floating-orbs">
-            <div class="orb"></div>
-            <div class="orb"></div>
-            <div class="orb"></div>
-        </div>
-        <div class="header">
-            <img src="LexiMus-Logo-Vertical.svg" alt="LexiMus USAL" class="logo">
-            <p class="subtitle">UNIVERSIDAD DE SALAMANCA</p>
-            <div class="project-code">PID2022-139589NB-C33</div>
-            
-            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1200&auto=format&fit=crop" alt="Visualización de análisis de datos y gráficos en pantalla" class="hero-image">
-            
-            <div class="description"> 
-                <p>Proyecto de la Universidad de Salamanca, coordinado desde el ICCMU, en colaboración con la Universidad de La Rioja, que analiza el vocabulario musical en español a través de millones de palabras en publicaciones históricas. Desarrollamos un diccionario digital científico y una ontología conceptual para más de 600 millones de hispanohablantes. Desde USAL trabajamos con corpus de textos de prensa musical.</p>
-            </div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
 
-            <div class="institutions">
-                <div class="institution">Universidad de Salamanca</div>
-                <div class="institution">Instituto Complutense de Ciencias Musicales</div>
-                <div class="institution">Universidad de La Rioja</div>
-            </div>
+    <main class="card">
+        <div class="badge">
+            <span class="badge-dot"></span>
+            Nos hemos trasladado
         </div>
 
-        <div class="access-section">
-            <div class="access-card">
-                <h3>🎵 Buscador de noticias musicales</h3>
-                <p>Explora las noticias musicales en la prensa histórica española. Descubre cómo se escribió sobre música en periódicos históricos desde el siglo XVIII.</p>
-                <a href="https://leximususal.github.io/noticiasmusicales/" class="access-btn" target="_blank">Acceder al Análisis</a>
-            </div>
+        <img src="LexiMus-Logo-Vertical.svg" alt="LexiMus" class="logo">
 
-            <div class="access-card">
-                <h3>📊 Análisis inicial</h3>
-                <p>Accede al portal principal de análisis computacional de publicaciones musicales históricas. Visualiza datos y tendencias de las fuentes históricas procesadas.</p>
-                <a href="https://leximususal.github.io/principal/" class="access-btn" target="_blank">Ir al Portal Principal</a>
-            </div>
-        </div>
+        <h1>LexiMus ya tiene<br>su propio dominio en <span>la USAL</span></h1>
 
-        <!-- Sección destacada con dos botones grandes -->
-        <div style="margin-top: 4rem; padding: 3rem; background: linear-gradient(135deg, rgba(0, 138, 155, 0.08) 0%, rgba(0, 160, 180, 0.05) 100%); border-radius: 20px; border: 2px solid rgba(0, 138, 155, 0.2);">
-            <h2 style="text-align: center; font-size: 2.2rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 2.5rem;">Conoce más sobre el proyecto USAL</h2>
+        <p class="lead">
+            El proyecto <strong>LexiMus: Léxico y ontología de la música en español</strong>
+            (PID2022-139589NB-C33) cuenta ahora con un espacio institucional propio
+            en la Universidad de Salamanca. Puedes encontrarnos en:
+        </p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; max-width: 900px; margin: 0 auto;">
-                <!-- Botón Nuestro Equipo -->
-                <div style="background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 138, 155, 0.15); text-align: center; transition: all 0.3s ease;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
-                    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 1rem;">Nuestro Equipo</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">Conoce a los investigadores e investigadoras que forman parte del equipo LexiMus USAL.</p>
-                    <a href="equipo.html" style="display: inline-block; background: linear-gradient(135deg, #008a9b, #00a0b4); color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 138, 155, 0.3);">
-                        Ver Equipo →
-                    </a>
-                </div>
-
-                <!-- Botón Cómo funciona -->
-                <div style="background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 138, 155, 0.15); text-align: center; transition: all 0.3s ease;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
-                    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 1rem;">¿Cómo funciona la IA?</h3>
-                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">Descubre qué es este proyecto y cómo utilizamos la IA en el análisis de textos históricos.</p>
-                    <a href="intro.html" style="display: inline-block; background: linear-gradient(135deg, #008a9b, #00a0b4); color: white; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1rem; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 138, 155, 0.3);">
-                        Saber más →
-                    </a>
-                </div>
-            </div>
-        </div>
-
-
-       <footer class="footer">
-    <p>
-        Financiado por el Ministerio de Ciencia e Innovación (MICIU/AEI) y Fondos FEDER.  
-        Si utilizas las fuentes de este espacio en tu investigación, por favor cita:<br>
-        <strong>Prensa musical e Inteligencia Artificial</strong>.  
-        Proyecto LexiMus: Léxico y ontología de la música en español (PID2022-139589NB-C33), Universidad de Salamanca.  
-        Disponible en: <a href="https://leximus.usal.es" target="_blank">https://leximus.usal.es</a><br>
-        © 2025 Universidad de Salamanca
-    </p>
-
-    <p>
-        <a href="https://leximus.es/" target="_blank">Proyecto LexiMus</a> |
-        <a href="equipo.html">Nuestro Equipo</a> |
-        <a href="intro.html">Introducción</a>
-    </p>
-
-    <p style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem; margin-top: 1rem;">Con la colaboración de</p>
-
-    <div class="logos-section">
-        <img src="Logo USAL.png" alt="Universidad de Salamanca" class="logo-img">
-        <img src="Logo MINISTERIO.png" alt="Ministerio de Ciencia, Innovación y Universidades - Cofinanciado por la Unión Europea" class="logo-img">
-        <a href="https://cie.usal.es/" target="_blank" rel="noopener noreferrer">
-            <img src="Logo CIE.png" alt="Centro Internacional del Español - Universidad de Salamanca" class="logo-img" style="transition: opacity 0.3s ease;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'">
+        <a href="https://leximus.usal.es" class="new-url">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            leximus.usal.es
         </a>
-    </div>
-</footer>
+
+        <p class="countdown">
+            Serás redirigido automáticamente en <strong id="timer">12</strong> segundos.
+        </p>
+
+        <hr class="divider">
+
+        <div class="github-note">
+            <div class="github-icon">
+                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                    <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                </svg>
+            </div>
+            <p>
+                Nuestros <strong>repositorios de código e investigación</strong> siguen disponibles
+                en GitHub en
+                <a href="https://github.com/LeximusUSAL" target="_blank" rel="noopener">github.com/LeximusUSAL</a>.
+                Las herramientas, corpus y análisis computacionales del proyecto permanecen
+                accesibles y en desarrollo activo desde allí.
+            </p>
+        </div>
+
+        <div class="logos-section">
+            <img src="Logo USAL.png" alt="Universidad de Salamanca" class="logo-img">
+            <img src="Logo MINISTERIO.png" alt="Ministerio de Ciencia, Innovación y Universidades" class="logo-img">
+        </div>
+    </main>
+
+    <script>
+        let t = 12;
+        const el = document.getElementById('timer');
+        const iv = setInterval(() => {
+            t--;
+            el.textContent = t;
+            if (t <= 0) { clearInterval(iv); window.location.href = 'https://leximus.usal.es'; }
+        }, 1000);
+    </script>
 </body>
 </html>
